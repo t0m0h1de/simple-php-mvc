@@ -1,0 +1,16 @@
+version: '3'
+services:
+  mongo:
+    build:
+      context: .
+      dockerfile: ./docker/mongo/Dockerfile
+    container_name: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongo
+      MONGO_INITDB_ROOT_PASSWORD: mongo
+      MONGO_INITDB_DATABASE: zipsdb
+      TZ: Asia/Tokyo
+    ports:
+      - 27017:27017
+    volumes:
+      - ./docker/mongo/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
