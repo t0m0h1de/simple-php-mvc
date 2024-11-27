@@ -2,9 +2,13 @@ ARG TAG=latest
 
 FROM registry.access.redhat.com/ubi9/php-82:$TAG
 
+ARG UID=1001
+
 USER 0
 
 RUN dnf -y install php-devel php-pear
 
 RUN pecl install mongodb && \
     echo "extension=mongodb.so" > /etc/php.d/40-mongodb.ini
+
+USER $UID
