@@ -6,6 +6,11 @@ ARG UID=1001
 
 USER 0
 
+RUN dnf -y install php-devel php-pear
+
+RUN pecl install mongodb && \
+    echo "extension=mongodb.so" > /etc/php.d/40-mongodb.ini
+
 COPY --chown=$UID:0 ./ /tmp/src
 
 # RUN /usr/libexec/s2i/assemble

@@ -3,11 +3,11 @@
 # pre-process
 echo "Start custom pre-process..."
 
-dnf -y install php-devel php-pear
-
-pecl install mongodb
-
-echo "extension=mongodb.so" > /etc/php.d/40-mongodb.ini
+# dnf -y install php-devel php-pear
+#
+# pecl install mongodb
+#
+# echo "extension=mongodb.so" > /etc/php.d/40-mongodb.ini
 
 echo "Custom pre-process is success"
 
