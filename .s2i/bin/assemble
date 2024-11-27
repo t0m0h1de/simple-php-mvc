@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# pre-process
+echo "Start custom pre-process..."
+
+dnf -y install php-devel php-pear
+
+pecl install mongodb
+
+echo "extension=mongodb.so" > /etc/php.d/40-mongodb.ini
+
+echo "Custom pre-process is success"
+
+/usr/libexec/s2i/assemble
+
+# post-process
+echo "Start custom post-process..."
+
+mv public/index.php ./
+rm -r public
+
+sed -i 's/\.\.\///g' index.php
+
+./composer.phar dump-autoload --optimize
+
+echo "Custom post-process is success"

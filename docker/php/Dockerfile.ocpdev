@@ -1,0 +1,16 @@
+ARG TAG=latest
+
+FROM registry.access.redhat.com/ubi9/php-82:$TAG
+
+ARG UID=1001
+
+USER 0
+
+COPY --chown=$UID:0 ./ /tmp/src
+
+# RUN /usr/libexec/s2i/assemble
+RUN /tmp/src/.s2i/bin/assemble
+
+USER $UID
+
+CMD /usr/libexec/s2i/run
