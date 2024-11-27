@@ -19,7 +19,7 @@
     </p>
 </form>
 <ul>
-    <?php if (!is_null($zip)) : ?>
+    <?php if (isset($zip) && !is_null($zip)) : ?>
         <li>zipcode: <?= $zip->id ?></li>
         <li>name: <?= $zip->city ?></li>
         <li>population: <?= $zip->pop ?></li>

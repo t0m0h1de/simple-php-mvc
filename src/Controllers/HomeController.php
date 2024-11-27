@@ -9,8 +9,7 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $city = $_GET['city'];
-        if (is_null($city)) {
+        if (!isset($_GET['city'])) {
             $this->render('index');
         } else {
             if (!empty(getenv('DATABASE_HOST'))) {
@@ -44,7 +43,7 @@ class HomeController extends Controller
                 $collection = "zips";
             }
             $repo = new ZipsMongo("mongodb://$user:$password@$host:$port", $dbname, $collection);
-            $zip = $repo->findByName(strtoupper($city));
+            $zip = $repo->findByName(strtoupper($_GET['city']));
             $this->render('index', ['zip' => $zip]);
         }
     }
