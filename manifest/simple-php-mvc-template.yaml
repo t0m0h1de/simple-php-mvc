@@ -1,0 +1,139 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+labels:
+  app: simple-php-mvc-example
+  app.openshift.io/runtime: apache
+  template: simple-php-mvc
+message: |-
+  The following service(s) have been created in your project: ${NAME}.
+
+  For more information about using this template, including OpenShift considerations, see https://github.com/sclorg/httpd-ex/blob/master/README.md.
+metadata:
+  annotations:
+    description: An example simple-php-mvc, see https://github.com/t0m0h1de/simple-php-mvc/blob/main/README.md.
+    iconClass: icon-php
+    openshift.io/display-name: Simple PHP MVC
+    openshift.io/documentation-url: https://github.com/t0m0h1de/simple-php-mvc
+    openshift.io/long-description: This template defines resources needed to develop
+      a static application served by Apache HTTP Server (httpd), including a build
+      configuration and application deployment configuration.
+    openshift.io/provider-display-name: Tomohide Sawada.
+    openshift.io/support-url: https://github.com/t0m0h1de
+    samples.operator.openshift.io/version: 4.16.19
+    tags: quickstart,httpd,php
+  labels:
+    samples.operator.openshift.io/managed: "true"
+  name: simple-php-mvc
+  namespace: openshift
+objects:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: ${NAME}
+  spec:
+    ports:
+    - name: ${NAME}
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    - name: web-https
+      port: 8443
+      protocol: TCP
+      targetPort: 8443
+    selector:
+      name: ${NAME}
+- apiVersion: route.openshift.io/v1
+  kind: Route
+  metadata:
+    name: ${NAME}
+  spec:
+    host: ${APPLICATION_DOMAIN}
+    to:
+      kind: Service
+      name: ${NAME}
+- apiVersion: image.openshift.io/v1
+  kind: ImageStream
+  metadata:
+    name: ${NAME}
+- apiVersion: build.openshift.io/v1
+  kind: BuildConfig
+  metadata:
+    annotations:
+      template.alpha.openshift.io/wait-for-ready: "true"
+    name: ${NAME}
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: ${NAME}:latest
+    source:
+      git:
+        uri: https://github.com/t0m0h1de/simple-php-mvc
+      type: Git
+    strategy:
+      sourceStrategy:
+        env:
+        - name: DATABASE_HOST
+        - name: PHP_CLEAR_ENV
+        from:
+          kind: ImageStreamTag
+          name: php-mongo:${PHP_MONGO_VERSION}
+          namespace: ${NAMESPACE}
+      type: Source
+    triggers:
+    - type: ConfigChange
+    - type: ImageChange
+    - github:
+        secret: ${GITHUB_WEBHOOK_SECRET}
+      type: GitHub
+    - generic:
+        secret: ${GENERIC_WEBHOOK_SECRET}
+      type: Generic
+    lastVersion: 2
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      image.openshift.io/triggers: '[{"from":{"kind":"ImageStreamTag","name":"${NAME}:latest"},"fieldPath":"spec.template.spec.containers[0].image"}]'
+      template.alpha.openshift.io/wait-for-ready: "true"
+    name: ${NAME}
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        name: ${NAME}
+    strategy:
+      type: RollingUpdate
+    template:
+      metadata:
+        labels:
+          name: ${NAME}
+        name: ${NAME}
+      spec:
+        containers:
+        - env:
+          - name: PHP_CLEAR_ENV
+            value: "OFF"
+          - name: DATABASE_USER
+            valueFrom:
+              secretKeyRef:
+                key: MONGO_UESR
+                name: ${MONGODB_SECRET}
+          - name: DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: MONGO_PASSWORD
+                name: ${MONGODB_SECRET}
+          envFrom:
+          - configMapRef:
+              name: ${CONNECTION_CONFIG_MAP}
+          image: ' '
+          name: ${NAME}
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          - containerPort: 8443
+            protocol: TCP
+parameters:
+- description: The name assigned to all of the frontend objects defined in this template.
+  displayName: Name
