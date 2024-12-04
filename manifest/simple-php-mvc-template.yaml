@@ -24,7 +24,6 @@ metadata:
   labels:
     samples.operator.openshift.io/managed: "true"
   name: simple-php-mvc
-  namespace: openshift
 objects:
 - apiVersion: v1
   kind: Service
@@ -32,11 +31,11 @@ objects:
     name: ${NAME}
   spec:
     ports:
-    - name: ${NAME}
+    - name: 8080-tcp
       port: 8080
       protocol: TCP
       targetPort: 8080
-    - name: web-https
+    - name: 8443-tcp
       port: 8443
       protocol: TCP
       targetPort: 8443
@@ -47,10 +46,12 @@ objects:
   metadata:
     name: ${NAME}
   spec:
-    host: ${APPLICATION_DOMAIN}
     to:
       kind: Service
       name: ${NAME}
+    port:
+      targetPort: 8080-tcp
+    wildcardPolicy: None
 - apiVersion: image.openshift.io/v1
   kind: ImageStream
   metadata:
@@ -127,7 +128,7 @@ objects:
           envFrom:
           - configMapRef:
               name: ${CONNECTION_CONFIG_MAP}
-          image: ' '
+          image: ${NAME}:latest
           name: ${NAME}
           ports:
           - containerPort: 8080
@@ -137,3 +138,29 @@ objects:
 parameters:
 - description: The name assigned to all of the frontend objects defined in this template.
   displayName: Name
+  name: NAME
+- description: The namespace to deploy this application.
+  displayName: Namespace
+  name: NAMESPACE
+- description: The base domain of OCP.
+  displayName: Application Domain
+  name: APPLICATION_DOMAIN
+- description: The version of ImageStream/php-mongo.
+  displayName: PHP Mongo Version
+  name: PHP_MONGO_VERSION
+- description: The secret to connect to Mongo that must contain `MONGO_PASSWORD` and `MONGO_USER`.
+  displayName: Mongo Secret
+  name: MONGODB_SECRET
+- description: The config map to connect to Mongo that can contain `DATABASE_HOST`, `DATABASE_PORT`, `DATABASE_NAME` and `DATABASE_COLLECTION`.
+  displayName: Mongo Secret
+  name: CONNECTION_CONFIG_MAP
+- description: The secret of github webhook.
+  displayName: Github webhook secret
+  name: GITHUB_WEBHOOK_SECRET
+  generate: expression
+  from: "[a-zA-Z0-9]{20}"
+- description: The secret of generic webhook.
+  displayName: Generic webhook secret
+  name: GENERIC_WEBHOOK_SECRET
+  generate: expression
+  from: "[a-zA-Z0-9]{20}"
