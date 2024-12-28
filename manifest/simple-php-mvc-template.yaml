@@ -1,7 +1,7 @@
 apiVersion: template.openshift.io/v1
 kind: Template
 labels:
-  app: simple-php-mvc-example
+  app: ${NAME}
   app.openshift.io/runtime: apache
   template: simple-php-mvc
 message: |-
@@ -118,7 +118,7 @@ objects:
           - name: DATABASE_USER
             valueFrom:
               secretKeyRef:
-                key: MONGO_UESR
+                key: MONGO_USER
                 name: ${MONGODB_SECRET}
           - name: DATABASE_PASSWORD
             valueFrom:
